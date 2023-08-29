@@ -17,7 +17,6 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-/*
 output "subnet" {
   value = module.subnets
-}*/
+}
