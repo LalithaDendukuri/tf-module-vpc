@@ -18,20 +18,27 @@ resource "aws_internet_gateway" "igw" {
 }
 
 resource "aws_route" "igw" {
-  for_each          = lookup(lookup(module.subnets,"public",null ),"aws_route_table_ids",null)
+  for_each          = lookup(lookup(module.subnets,"public",null ),"route_table_ids",null)
   route_table_id          = each.value["id"]
   destination_cidr_block    = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.igw.id
 }
 
 resource "aws_eip" "ngw" {
-  for_each = lookup(lookup(module.subnets,"public",null ),"subnet_ids",null)
+  count          = length(local.public_subnet_ids)
   domain   = "vpc"
 }
-resource "aws_nat_gateway" "example" {
-  for_each = lookup(lookup(module.subnets,"public",null ),"subnet_ids",null)
-  allocation_id = lookup(lookup(aws_eip.ngw,each.key,null ),"id",null)
-  subnet_id     = each.value["id"]
+resource "aws_nat_gateway" "ngw" {
+  count          = length(local.public_subnet_ids)
+  allocation_id =   element(aws_eip.ngw.*.id,count.index )
+  subnet_id     = element(local.public_subnet_ids,count.index )
+}
+
+resource "aws_route" "ngw" {
+  count          = length(local.private_rt_ids)
+  route_table_id          = element(local.private_rt_ids,count.index )
+  destination_cidr_block    = "0.0.0.0/0"
+  nat_gateway_id             = element(aws_nat_gateway.ngw.*.id,count.index)
 }
 output "subnet" {
   value = module.subnets
