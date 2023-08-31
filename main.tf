@@ -7,7 +7,7 @@ module "subnets" {
   for_each = var.subnets
   subnets= each.value
   vpc_id = aws_vpc.main.id
-  default_vpc_id = var.default_vpc_id
+
 }
 
 resource "aws_internet_gateway" "igw" {
