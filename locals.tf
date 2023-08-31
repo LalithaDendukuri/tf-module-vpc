@@ -10,4 +10,8 @@ locals {
   app_rt_ids= [for k, v in lookup(lookup(module.subnets,"app",null ),"aws_route_table_ids",null) : v.id]
   db_rt_ids= [for k, v in lookup(lookup(module.subnets,"db",null ),"aws_route_table_ids",null) : v.id]
   private_rt_ids=  concat(local.app_rt_ids,local.db_rt_ids)
+
+  #Tags
+  tags= merge(var.tags, { tf-module-name = "VPC"} , {env = var.env} )
+
 }
